@@ -46,7 +46,6 @@ public class RemoteCamera extends Activity {
 
       try {
         setupServer();
-        setupCamera();
       } catch ( Exception ex ) {
         Log.e(LOG_TAG, "Error setting up :" + ex.getMessage());
       }
@@ -127,6 +126,7 @@ public class RemoteCamera extends Activity {
               Log.i(LOG_TAG, "Sending picture to " + adr);
               textView.setText("Sending picture to " + adr);
               client.close();
+              camera.release();
             } catch ( IOException ex ) {
               Log.e(LOG_TAG, "Error sending image data: " + ex.getMessage());
             }
@@ -142,7 +142,7 @@ public class RemoteCamera extends Activity {
    * Takes a picture.
    */
   private void takePicture() {
-    camera.stopPreview();
+    setupCamera();
     camera.startPreview();
     camera.autoFocus(new Camera.AutoFocusCallback() {
       public void onAutoFocus(boolean success, Camera camera) {
@@ -161,7 +161,6 @@ public class RemoteCamera extends Activity {
     if (listeningThread.isAlive()) {
       isDead = true;
     }
-    camera.release();
   }
 
   public void die(View ignore) {
