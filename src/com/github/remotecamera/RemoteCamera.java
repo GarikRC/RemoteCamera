@@ -19,11 +19,12 @@ public class RemoteCamera extends Activity {
         camera = Camera.open();
         pictureCallback = new Camera.PictureCallback() {
           public void onPictureTaken(byte[] imageTaken, Camera camera) {
-            System.out.println("asljkfalsdjkfaslkdjf");
+            System.out.println("picture taken");
           }
         };
         camera.takePicture(null, null, pictureCallback);
       } catch ( Exception ex ) {
+        System.out.println(ex.getMessage());
       }
   }
 
