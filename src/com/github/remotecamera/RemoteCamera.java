@@ -2,14 +2,13 @@ package com.github.remotecamera;
 
 import android.app.Activity;
 import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.EmptyStackException;
@@ -139,7 +138,16 @@ public class RemoteCamera extends Activity {
    * Takes a picture.
    */
   private void takePicture() {
-    camera.takePicture(null, null, pictureCallback);
+    camera.startPreview();
+    camera.autoFocus(new Camera.AutoFocusCallback() {
+      public void onAutoFocus(boolean success, Camera camera) {
+        if ( success ) {
+          camera.takePicture(null, null, pictureCallback);
+        } else {
+          Log.e(LOG_TAG, "Autofocus failed");
+        }
+      }
+    });
   }
 
   @Override
