@@ -30,6 +30,8 @@ public class RemoteCamera extends Activity {
 
   private TextView textView;
 
+  private Parameters parameters;
+
   /** A stack that contains all connected clients.
    * The taken picture will be sent to the clients in this stack.
    */
@@ -111,6 +113,11 @@ public class RemoteCamera extends Activity {
    */
   private void setupCamera() {
     camera = Camera.open();
+    parameters = camera.getParameters();
+    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+    parameters.setJpegQuality(100);
+    parameters.setRotation(270);
+    camera.setParameters(parameters);
     pictureCallback = new Camera.PictureCallback() {
       public void onPictureTaken(byte[] imageTaken, Camera camera) {
         Log.d(LOG_TAG, "Picture taken");
