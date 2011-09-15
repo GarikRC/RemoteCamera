@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +20,6 @@ public class RemoteCamera extends Activity {
   private Camera camera = null;
   private Camera.PictureCallback pictureCallback = null;
   private ServerSocket socket;
-  private boolean isListening = false;
   private Thread listeningThread;
   /** Signals if the listening thread should be killed. */
   private boolean isDead = false;
@@ -56,14 +56,12 @@ public class RemoteCamera extends Activity {
   protected void onPause() {
     super.onPause();
     Log.d(LOG_TAG, "No longer listening");
-    isListening = false;
   }
 
   @Override
   protected void onResume() {
     super.onPause();
     Log.d(LOG_TAG, "Starting to listen");
-    isListening = true;
   }
 
   /**
@@ -78,21 +76,19 @@ public class RemoteCamera extends Activity {
         try {
           Log.d(LOG_TAG, "Started listening thread");
           while ( !isDead ) {
-            if (isListening) {
-              Socket client = socket.accept();
-              clients.push(client);
-              try {
-                BufferedReader in = new BufferedReader(
-                    new InputStreamReader(client.getInputStream()));
-                String str = in.readLine();
-                Log.d(LOG_TAG, "Received: " + str);
-                if (str.equals("take_a_picture_dude")) {
-                  takePicture();
-                }
-              } catch ( Exception ex ) {
-                Log.e(
-                    LOG_TAG, "Exception in socket thread: " + ex.getMessage());
+            Socket client = socket.accept();
+            clients.push(client);
+            try {
+              BufferedReader in = new BufferedReader(
+                  new InputStreamReader(client.getInputStream()));
+              String str = in.readLine();
+              Log.d(LOG_TAG, "Received: " + str);
+              if (str.equals("take_a_picture_dude")) {
+                takePicture();
               }
+            } catch ( Exception ex ) {
+              Log.e(
+                  LOG_TAG, "Exception in socket thread: " + ex.getMessage());
             }
             try {
               Thread.sleep(100);
@@ -114,6 +110,7 @@ public class RemoteCamera extends Activity {
   private void setupCamera() {
     camera = Camera.open();
     parameters = camera.getParameters();
+    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
     parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
     parameters.setJpegQuality(100);
     parameters.setRotation(270);
@@ -145,6 +142,7 @@ public class RemoteCamera extends Activity {
    * Takes a picture.
    */
   private void takePicture() {
+    camera.stopPreview();
     camera.startPreview();
     camera.autoFocus(new Camera.AutoFocusCallback() {
       public void onAutoFocus(boolean success, Camera camera) {
@@ -160,14 +158,13 @@ public class RemoteCamera extends Activity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
-
-    if (camera != null) {
-      camera.release();
-    }
-    if (isListening && listeningThread.isAlive()) {
+    if (listeningThread.isAlive()) {
       isDead = true;
     }
+    camera.release();
   }
 
-    
+  public void die(View ignore) {
+    finish();
+  }
 }

@@ -8,6 +8,12 @@
     android:id="@+id/textview"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    />
+   />
+   <Button
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="Die!!111"
+     android:onClick="die"
+   />
 </LinearLayout>
 
