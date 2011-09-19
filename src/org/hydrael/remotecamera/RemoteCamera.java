@@ -11,10 +11,13 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.EmptyStackException;
@@ -122,10 +125,12 @@ public class RemoteCamera extends Activity {
                   new InputStreamReader(client.getInputStream()));
               String str = in.readLine();
               Log.d(LOG_TAG, "Received: " + str);
-              if (str.equals("take_a_picture_dude")) {
+              if (str.equals("are_you_there_bro")) {
+                shakeHand(client);
+              } else if (str.equals("take_a_picture_dude")) {
                 takePicture();
               } else if (str.equals("what's_going_on_mate")) {
-                sendLastPreviewFrame();
+                sendLastPreviewFrame(client);
               }
             }
           } catch ( Exception ex ) {
@@ -143,17 +148,26 @@ public class RemoteCamera extends Activity {
     Log.d(LOG_TAG, "Finished setting up server...");
   }
 
+  private void shakeHand(Socket client) {
+      try {
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
+            new BufferedOutputStream(client.getOutputStream())));
+        w.write("sure_thing_buddy");
+        w.flush();
+      } catch ( IOException e ) {
+        Log.e(LOG_TAG, "Shaking hands" + e.getMessage());
+      }
+  }
+
   /**
    * Sends the last preview frame to all connected clients.
    */
-  private void sendLastPreviewFrame() {
+  private void sendLastPreviewFrame(Socket c) {
     if ( lastPreviewFrame != null && lastPreviewFrame.length > 0 ) {
-      for ( Socket c : clients ) {
-        try {
-          c.getOutputStream().write(lastPreviewFrame);
-        } catch ( IOException e ) {
-          Log.e(LOG_TAG, "Error sending preview frame data: " + e.getMessage());
-        }
+      try {
+        c.getOutputStream().write(lastPreviewFrame);
+      } catch ( IOException e ) {
+        Log.e(LOG_TAG, "Error sending preview frame data: " + e.getMessage());
       }
     }
   }
